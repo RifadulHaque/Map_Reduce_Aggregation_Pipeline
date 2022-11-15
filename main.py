@@ -33,7 +33,9 @@ if __name__ == '__main__':
     requested_metric = get_metric(workload_metric)
     # Start and End of record
     first_data = batch_id * batch_unit
+    print(first_data)
     last_data = first_data + batch_size * batch_unit - 1
+    print(last_data)
     stage_limit_5 = {"$limit": 5}
     pipeline = [
         # Stage 1
@@ -48,7 +50,8 @@ if __name__ == '__main__':
 
             '$group': {
                 '_id': {
-                    '$ceil': {  # Returns the smallest integer greater than or equal
+                    '$ceil': {  # Returns the smallest integer greater than or equal to the specified number,
+                        # incase if it is in decimal it will return a proper integer
                         '$divide': [  # Divides one number by another and returns the result
                             {
                                 # Add numbers together
@@ -59,7 +62,7 @@ if __name__ == '__main__':
                     }
                 },
                 'workload_metric': {  # returns an array of all values
-                    '$push': f'${workload_metric}'
+                    '$push': f'${requested_metric}'
                 }
             }
 
