@@ -61,7 +61,7 @@ if __name__ == '__main__':
                         ]
                     }
                 },
-                'workload_metric': {  # returns an array of all values
+                'requested_metric': {  # returns an array of all values
                     '$push': f'${requested_metric}'
                 }
             }
