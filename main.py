@@ -10,7 +10,6 @@
 # https://www.geeksforgeeks.org/mongodb-ceil-operator/
 
 from pymongo import MongoClient
-import numpy as np
 
 from Request import get_file_name, get_metric, request_for_metrics
 
@@ -29,8 +28,9 @@ if __name__ == '__main__':
     # record = collection_db.find()
     # for x in record:
     #     print(x)
-    # which column to use
+    # which column to use -> collection
     requested_metric = get_metric(workload_metric)
+    # db.collection(requested_metric)
     # Start and End of record
     first_data = batch_id * batch_unit
     print(first_data)
@@ -41,7 +41,7 @@ if __name__ == '__main__':
         # Stage 1
         {
             '$match': {
-                'select_row': {
+                'Row': {
                     '$gte': first_data,
                     '$lte': last_data
                 }
@@ -55,13 +55,13 @@ if __name__ == '__main__':
                         '$divide': [  # Divides one number by another and returns the result
                             {
                                 # Add numbers together
-                                '$add': ['$select_row', 1, -first_data]
+                                '$add': ['$Row', 1, -first_data]
                             },
                             batch_unit
                         ]
                     }
                 },
-                'workload_metric': {  # returns an array of all values
+                'work_metric': {  # returns an array of all values
                     '$push': f'${requested_metric}'
                 }
             }
@@ -75,20 +75,40 @@ if __name__ == '__main__':
                 '_id': 0,  # do not display _id
                 'batch_id': '$_id',
                 'minimum': {
-                    '$min': f'${requested_metric}'
+                    '$min': '$work_metric'
                 },
                 'maximum': {
-                    '$max': f'${requested_metric}'
+                    '$max': '$work_metric'
                 },
-                # 'median': {
-                #
-                # },
-                'Standard_deviation': {
-                    '$stdDevSamp': f'${requested_metric}'
+                'std_dev': {
+                    '$stdDevSamp': '$work_metric'
+                },
+                'median': {
+                    '$cond': {
+                        'if': {'$eq': [{'$mod': [{'$size': ['$work_metric']}, 2]}, 0]},
+                        'then': {
+                            '$divide': [{
+                                '$add': [
+                                    {
+                                        '$arrayElemAt': [
+                                            '$work_metric', {'$divide': [{'$size': ['$work_metric']}, 2]}]
+                                    },
+                                    {
+                                        '$arrayElemAt': [
+                                            '$work_metric',
+                                            {'$subtract': [{'$divide': [{'$size': ['$work_metric']}, 2]}, 1]}]
+                                    }
+                                ]
+                            }, 2]
+                        },
+                        'else': {
+                            '$arrayElemAt': [
+                                '$work_metric', {'$floor': {'$divide': [{'$size': ['$work_metric']}, 2]}}
+                            ]
+                        }
+                    }
                 }
             }
-        }, {  # stage 5
-            '$sort': {'batch_id': 1}
         },
 
     ]
@@ -100,8 +120,11 @@ if __name__ == '__main__':
     print("Response for Item : ")
     # Aggregate requests returns cursor from server
     cursor = collection_db.aggregate(pipeline)
+    file = open('out.txt', 'w')
     for index in cursor:
         print(index)
+        file.write(str(index)+"\n")
+
 
 
 

@@ -42,7 +42,7 @@ def get_file_name(benchmark, data):
     else:
         benchmark_type = "NDBench"
 
-    if data == 1:
+    if data == 2:
         data_type = "testing"
     else:
         data_type = "training"
