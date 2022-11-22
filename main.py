@@ -47,7 +47,6 @@ if __name__ == '__main__':
                 }
             }
         }, {  # stage 2
-
             '$group': {
                 '_id': {
                     '$ceil': {  # Returns the smallest integer greater than or equal to the specified number,
@@ -65,7 +64,6 @@ if __name__ == '__main__':
                     '$push': f'${requested_metric}'
                 }
             }
-
         }, {  # sort in ascending order , Stage 3
             '$sort': {
                 f'{requested_metric}': 1
@@ -110,7 +108,6 @@ if __name__ == '__main__':
                 }
             }
         },
-
     ]
 
     request_metric = {"metrics_id": metrics_id, "benchmark_type": benchmark_type, "workload_metric": workload_metric,
